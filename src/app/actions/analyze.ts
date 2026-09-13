@@ -45,9 +45,9 @@ export async function analyzeIncident(formData: FormData): Promise<AnalyzeResult
       Например, если утечка в центре, то [30, 30, 70, 70]. Если утечек нет, верните [0,0,0,0].
     `;
 
-    // Используем gemini-2.5-flash, так как у 3.5 жесткие лимиты, а 1.5 удалена
+    // API Google требует использовать gemini-3.6-flash для новых ключей
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash", 
+      model: "gemini-3.6-flash", 
       contents: [
         prompt,
         {
