@@ -47,7 +47,7 @@ export async function analyzeIncident(formData: FormData): Promise<AnalyzeResult
 
     // Используем самую новую доступную модель (исправляем ошибку 404, так как 1.5 уже не поддерживается в 2026)
     const response = await ai.models.generateContent({
-      model: "gemini-3.5-flash", 
+      model: "gemini-1.5-flash", 
       contents: [
         prompt,
         {
