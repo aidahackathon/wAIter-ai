@@ -38,17 +38,18 @@ export default function IncidentReporter() {
 
     try {
       const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 10000 });
+        navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 });
       });
       lat = pos.coords.latitude;
       lng = pos.coords.longitude;
       formData.append("lat", lat.toString());
       formData.append("lng", lng.toString());
-    } catch (geoError) {
-      console.warn("Геолокация недоступна", geoError);
+    } catch (locErr) {
+      console.log("Location access denied or failed, proceeding without location.");
     }
 
     try {
+      const { analyzeIncident } = await import('@/app/actions/analyze');
       const aiResult = await analyzeIncident(formData);
       setResult(aiResult);
 
