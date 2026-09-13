@@ -45,9 +45,9 @@ export async function analyzeIncident(formData: FormData): Promise<AnalyzeResult
       Например, если утечка в центре, то [30, 30, 70, 70]. Если утечек нет, верните [0,0,0,0].
     `;
 
-    // Используем самую новую доступную модель (исправляем ошибку 404, так как 1.5 уже не поддерживается в 2026)
+    // Используем gemini-2.5-flash, так как у 3.5 жесткие лимиты, а 1.5 удалена
     const response = await ai.models.generateContent({
-      model: "gemini-1.5-flash", 
+      model: "gemini-2.5-flash", 
       contents: [
         prompt,
         {
