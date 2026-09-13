@@ -1,12 +1,18 @@
 ﻿"use server";
-import { kv } from '@vercel/kv';
+import Redis from 'ioredis';
+
+const redis = new Redis(process.env.REDIS_URL || '');
 
 export async function getIncidents() {
   try {
-    const data = await kv.get('incidents');
-    return Array.isArray(data) ? data : [];
+    const data = await redis.get('incidents');
+    if (data) {
+      const parsed = JSON.parse(data);
+      return Array.isArray(parsed) ? parsed : [];
+    }
+    return [];
   } catch (error) {
-    console.error("KV get error:", error);
+    console.error("Redis get error:", error);
     return [];
   }
 }
@@ -14,7 +20,7 @@ export async function getIncidents() {
 export async function saveIncident(incident: any) {
   const incidents = await getIncidents();
   incidents.unshift(incident);
-  await kv.set('incidents', incidents);
+  await redis.set('incidents', JSON.stringify(incidents));
   return { success: true };
 }
 
@@ -23,11 +29,11 @@ export async function updateIncidentStatus(id: string, status: string) {
   const updated = incidents.map((inc: any) => 
     inc.id === id ? { ...inc, status } : inc
   );
-  await kv.set('incidents', updated);
+  await redis.set('incidents', JSON.stringify(updated));
   return { success: true };
 }
 
 export async function clearIncidents() {
-  await kv.set('incidents', []);
+  await redis.set('incidents', JSON.stringify([]));
   return { success: true };
 }
