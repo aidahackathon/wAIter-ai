@@ -30,8 +30,51 @@ export default function IncidentReporter() {
     setIsAnalyzing(true);
     setResult(null);
 
+    // Сжатие изображения для обхода лимита Vercel в 4.5 МБ
+    const compressImage = async (imageFile: File): Promise<File> => {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(imageFile);
+        reader.onload = (event) => {
+          const img = new Image();
+          img.src = event.target?.result as string;
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const MAX_WIDTH = 1200;
+            const MAX_HEIGHT = 1200;
+            let width = img.width;
+            let height = img.height;
+
+            if (width > height) {
+              if (width > MAX_WIDTH) {
+                height *= MAX_WIDTH / width;
+                width = MAX_WIDTH;
+              }
+            } else {
+              if (height > MAX_HEIGHT) {
+                width *= MAX_HEIGHT / height;
+                height = MAX_HEIGHT;
+              }
+            }
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx?.drawImage(img, 0, 0, width, height);
+            canvas.toBlob((blob) => {
+              if (blob) {
+                resolve(new File([blob], imageFile.name, { type: 'image/jpeg' }));
+              } else {
+                resolve(imageFile);
+              }
+            }, 'image/jpeg', 0.7);
+          };
+        };
+      });
+    };
+
+    const compressedFile = await compressImage(file);
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append("file", compressedFile);
 
     let lat = 0;
     let lng = 0;
@@ -74,7 +117,7 @@ export default function IncidentReporter() {
           const { saveIncident } = await import('@/app/actions/db');
           await saveIncident(newIncident);
         };
-        reader.readAsDataURL(file);
+        reader.readAsDataURL(compressedFile);
       }
 
     } catch (error) {
